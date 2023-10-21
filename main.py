@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from Models.models import FileInfo
-from utils import stage_files, get_fileattributes, process_and_insert
-from mongo import insert_data, get_top_10_recently_updated, collection
+from Modules.utils import stage_files, get_fileattributes, process_and_insert
+from Modules.mongo import insert_data, get_top_10_recently_updated, collection
 from Schema.schemas import list_serial, individual_serializer
 import json
 from typing import List

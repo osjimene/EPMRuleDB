@@ -20,8 +20,8 @@ async def get_fileattributes(file) -> FileInfo:
     certoutput = os.path.join(os.getcwd(), 'Certificates')
     #instatiate the FileInfo model
     fileinfo = FileInfo()
-    epmModule = os.path.join(os.getcwd(),'EpmModules', 'EpmCmdlets.dll')  
-    # epmModule = os.path.join(os.getcwd(), 'modules', 'EpmModules', 'EpmCmdlets.dll')
+    # epmModule = os.path.join(os.getcwd(),'EpmModules', 'EpmCmdlets.dll')  
+    epmModule = os.path.join(os.getcwd(), 'Modules', 'EpmModules', 'EpmCmdlets.dll')
     hashalgorithm = "Sha256"
     result = subprocess.run(["powershell", rf"Import-Module {epmModule}; Get-fileAttributes -FilePath '{file}' -CertOutputPath {certoutput} -HashAlgorithm '{hashalgorithm}'"],capture_output=True, text=True)
     fileattributes = result.stdout
