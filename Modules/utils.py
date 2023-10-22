@@ -16,6 +16,8 @@ async def stage_files() -> list[str]:
 
 ##This uses the EPM commandlet to grab all the file attribute information via powershell.
 async def get_fileattributes(file) -> FileInfo:
+    if not os.path.exists(os.path.join(os.getcwd(), 'Certificates')):
+        os.makedirs(os.path.join(os.getcwd(), 'Certificates'))
     #Set the certoutput path to the Certificates folder
     certoutput = os.path.join(os.getcwd(), 'Certificates')
     #instatiate the FileInfo model

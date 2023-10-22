@@ -48,6 +48,9 @@ def main():
     if choice == "Upload Files":
         st.header("Upload Files")
         fileData = st.file_uploader("Choose Files to Upload",type="exe", accept_multiple_files=True)
+        #if os.path.join(os.getcwd(), 'Tmp') does not exist, create it
+        if not os.path.exists(os.path.join(os.getcwd(), 'Tmp')):
+            os.makedirs(os.path.join(os.getcwd(), 'Tmp'))
         if fileData is not None:
             for file in fileData:
                 with open(os.path.join(os.getcwd(), 'Tmp', file.name), "wb") as buffer:
