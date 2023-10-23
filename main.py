@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from Models.models import FileInfo
 from Modules.utils import stage_files, get_fileattributes, process_and_insert
-from Modules.mongo import insert_data, get_top_10_recently_updated, collection
+from Modules.mongo import insert_data, collection
 from Schema.schemas import list_serial, individual_serializer
 import json
 import os
@@ -9,7 +9,7 @@ from typing import List
 
 
 
-app = FastAPI()
+app = FastAPI(max_upload_size=1024*1024*1024)  # 1GB
 
 @app.get("/")
 async def root():
@@ -31,10 +31,11 @@ async def process_files() -> str:
         # return("The following Rules have been processed successfully:\n " + str(rules))
     return ("There are currently no staged files to process.")
 
-@app.get("/getrecentfiles/")
-async def get_files():
-    data = await get_top_10_recently_updated()
-    return data
+
+@app.get("/getrecentdata/")
+async def get_recent_data(num_records: int = 10):
+    FileParams = list_serial(collection.find().sort("_id", -1).limit(num_records))
+    return FileParams
 
 @app.post("/insertdata/")
 async def insert(fileData: List[FileInfo]):
@@ -44,17 +45,18 @@ async def insert(fileData: List[FileInfo]):
     return print("Data inserted successfully into the database.")
 
 
-@app.get("/getdata/")
-async def get_data():
-    FileParams = list_serial(collection.find())
-    return FileParams
-
 @app.post("/uploadfile/")
-async def create_upload_file(file: UploadFile = File(...)):
-    fileData = file.file.read()
-    #if os.path.join(os.getcwd(), 'Tmp') does not exist, create it
-    if not os.path.exists(os.path.join(os.getcwd(), 'Tmp')):
-        os.makedirs(os.path.join(os.getcwd(), 'Tmp'))
-    with open(os.path.join(os.getcwd(), 'Tmp', file.filename), "wb") as buffer:
-        buffer.write(fileData)
-    return {"info": f"File {file.filename} has been uploaded and processed successfully."}
+async def create_upload_file(files: List[UploadFile] = File(...)):
+    response = []
+    for file in files:
+        if file.filename.endswith('.exe'):
+            fileData = file.file.read()
+            #if os.path.join(os.getcwd(), 'Tmp') does not exist, create it
+            if not os.path.exists(os.path.join(os.getcwd(), 'Tmp')):
+                os.makedirs(os.path.join(os.getcwd(), 'Tmp'))
+            with open(os.path.join(os.getcwd(), 'Tmp', file.filename), "wb") as buffer:
+                buffer.write(fileData)
+            response.append({"info": f"File {file.filename} has been uploaded and processed successfully."})
+        else:
+            response.append({"error": f"File {file.filename} is not an executable file. Please upload an executable file only for metadata extraction."})
+    return response
