@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from Models.models import FileInfo
 from Modules.utils import stage_files, get_fileattributes, process_and_insert
 from Modules.mongo import insert_data, get_top_10_recently_updated, collection
 from Schema.schemas import list_serial, individual_serializer
 import json
+import os
 from typing import List
 
 
@@ -47,3 +48,13 @@ async def insert(fileData: List[FileInfo]):
 async def get_data():
     FileParams = list_serial(collection.find())
     return FileParams
+
+@app.post("/uploadfile/")
+async def create_upload_file(file: UploadFile = File(...)):
+    fileData = file.file.read()
+    #if os.path.join(os.getcwd(), 'Tmp') does not exist, create it
+    if not os.path.exists(os.path.join(os.getcwd(), 'Tmp')):
+        os.makedirs(os.path.join(os.getcwd(), 'Tmp'))
+    with open(os.path.join(os.getcwd(), 'Tmp', file.filename), "wb") as buffer:
+        buffer.write(fileData)
+    return {"info": f"File {file.filename} has been uploaded and processed successfully."}
